@@ -34,21 +34,8 @@
   (for [ip (record-range r)]
     (into [(nth r 0) ip] (subvec r 3 6))))
 
-(defn explode-all [l]
-  (pmap explode-record l))
-
-(defn exploaded->stream [ll]
-  (lazy-seq
-    (if (seq ll)
-      (into (vec (first ll)) (exploaded->stream (rest ll))))))
-
 (defn explode-from-to [from-file to-file]
-  (let [in-data (process-csv from-file)
-        exploaded (explode-all in-data)
-        stream (mapcat identity exploaded)]
-    (write-to-csv to-file stream)))
-
-(defn expload-from-seq-to-file [s to-file]
-  (let [exploaded (explode-all s)
-        stream (exploaded->stream exploaded)]
-    (write-to-csv to-file stream)))
+  (->> (process-csv from-file)
+       (pmap explode-record)
+       (mapcat identity)
+       (write-to-csv to-file)))
